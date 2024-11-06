@@ -117,7 +117,7 @@ static void MX_TIM3_Init(void);
  }
 
 
- void decelerate_to_stop(void) {
+ void decelerate_to_stop() {
      while (current_speed > MIN_SPEED) {
 
     	 current_speed -= DECELERATION_STEP;
@@ -183,14 +183,12 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-	  /* Exemplu de utilizare: accelerează la viteza țintă, apoi decelerează */
-	          accelerate_to_target_speed(TARGET_SPEED);
-	          HAL_Delay(3000); // Menține viteza țintă timp de 1 secundă
+	          accelerate(MAX_SPEED);
+	          HAL_Delay(1000);
 
 	          decelerate_to_stop();
-	          HAL_Delay(3000); // Oprește motorul timp de 1 secundă
-	 // HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-	//  HAL_Delay(1000);
+	          HAL_Delay(1000);
+
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
