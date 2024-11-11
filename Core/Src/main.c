@@ -90,8 +90,8 @@ static void MX_TIM3_Init(void);
 //Daca se foloseste microstepping se atinge si o frecventa mai mare de 1400 Hz doar ca frecventele vor trebui modificate !
 #define MIN_FREQUENCY 16
 #define MAX_FREQUENCY 1400
-#define ACCELERATION_STEP 1
-#define DECELERATION_STEP 1
+#define ACCELERATION_STEP 5
+#define DECELERATION_STEP 5
 
 int current_frequency = MIN_FREQUENCY;
 
@@ -227,16 +227,16 @@ int main(void) {
 	while (1) {
 		/* USER CODE END WHILE */
 		accelerate_RPM(430);
-		HAL_Delay(1000);
+		HAL_Delay(3000);
 
 		decelerate_to_RPM(200);
-		HAL_Delay(1000);
+		HAL_Delay(3000);
 
 		accelerate_RPM(330);
-		HAL_Delay(1000);
+		HAL_Delay(3000);
 
 		decelerate_to_RPM(0);
-		HAL_Delay(1000);
+		HAL_Delay(3000);
 		/* USER CODE BEGIN 3 */
 	}
 	/* USER CODE END 3 */
