@@ -1,0 +1,2 @@
+../Core/Src/motor_control.c:13:6:accelerate_RPM	24	static
+../Core/Src/motor_control.c:43:6:decelerate_to_RPM	24	static
