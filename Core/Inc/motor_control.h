@@ -10,11 +10,11 @@
 
 #define MIN_FREQUENCY 16
 #define MAX_FREQUENCY 1500
-#define ACCELERATION_STEP 1
-#define DECELERATION_STEP 1
+#define ACCELERATION_STEP 5
+#define DECELERATION_STEP 5
 
 void accelerate_RPM(int target_speed_RPM);
 void decelerate_to_RPM(int target_speed_RPM);
-
+void set_direction(const char* direction);
 
 #endif /* INC_MOTOR_CONTROL_H_ */

@@ -125,20 +125,22 @@ int main(void)
   MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
 	HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
-	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
+
+	//HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 	while (1) {
-
+		set_direction("left");
 		accelerate_RPM(430);
 		HAL_Delay(3000);
 
-		decelerate_to_RPM(200);
+		decelerate_to_RPM(0);
 		HAL_Delay(3000);
 
+		set_direction("right");
 		accelerate_RPM(330);
 		HAL_Delay(3000);
 

@@ -7,6 +7,7 @@
 
 #include "motor_control.h"
 #include "stm32h7xx_hal.h"
+#include "string.h"
 
 extern TIM_HandleTypeDef htim3;
 
@@ -14,6 +15,7 @@ void accelerate_RPM(int target_speed_RPM) {
 
 	//Porneste generarea de semnal PWM
 	int target_frequency = (target_speed_RPM / 60.0) * 200;
+	int current_frequency  = 1000000 / (__HAL_TIM_GET_AUTORELOAD(&htim3)) +1;
 
 	if(target_frequency > MAX_FREQUENCY){
 		target_frequency = MAX_FREQUENCY;
@@ -24,7 +26,6 @@ void accelerate_RPM(int target_speed_RPM) {
 
 	HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
 
-	int current_frequency  = 1000000 / (__HAL_TIM_GET_AUTORELOAD(&htim3)) +1;
 
 	while (current_frequency < target_frequency) {
 
@@ -50,8 +51,6 @@ void decelerate_to_RPM(int target_speed_RPM) {
 		target_frequency = (target_speed_RPM / 60.0) * 200;
 	}
 
-
-
 	while (current_frequency > target_frequency) {
 
 		current_frequency -= DECELERATION_STEP;
@@ -64,8 +63,17 @@ void decelerate_to_RPM(int target_speed_RPM) {
 		__HAL_TIM_SET_AUTORELOAD(&htim3, (1000000 / current_frequency) - 1);
 		HAL_Delay(10);
 	}
+
 	if (target_speed_RPM == 0 && target_frequency == 16) {
 		HAL_TIM_PWM_Stop(&htim3, TIM_CHANNEL_1);
 	}
 }
 
+
+void set_direction(const char* direction) {
+    if (strcasecmp(direction, "LEFT") == 0) {
+        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
+    } else if (strcasecmp(direction, "RIGHT") == 0) {
+        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
+    }
+}
