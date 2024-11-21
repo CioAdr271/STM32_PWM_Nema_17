@@ -69,11 +69,10 @@ void decelerate_to_RPM(int target_speed_RPM) {
 	}
 }
 
-
-void set_direction(const char* direction) {
-    if (strcasecmp(direction, "LEFT") == 0) {
+void set_direction(Direction direction) {
+    if (direction == DIRECTION_LEFT) {
         HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_RESET);
-    } else if (strcasecmp(direction, "RIGHT") == 0) {
+    } else if (direction == DIRECTION_RIGHT) {
         HAL_GPIO_WritePin(GPIOA, GPIO_PIN_5, GPIO_PIN_SET);
     }
 }

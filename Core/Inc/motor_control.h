@@ -13,8 +13,13 @@
 #define ACCELERATION_STEP 5
 #define DECELERATION_STEP 5
 
+typedef enum {
+    DIRECTION_LEFT,
+    DIRECTION_RIGHT
+} Direction;
+
 void accelerate_RPM(int target_speed_RPM);
 void decelerate_to_RPM(int target_speed_RPM);
-void set_direction(const char* direction);
+void set_direction(Direction direction);
 
 #endif /* INC_MOTOR_CONTROL_H_ */
