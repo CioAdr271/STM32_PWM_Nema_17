@@ -1,3 +1,5 @@
 ../Core/Src/motor_control.c:14:6:accelerate_RPM	5
 ../Core/Src/motor_control.c:44:6:decelerate_to_RPM	6
 ../Core/Src/motor_control.c:72:6:set_direction	3
+../Core/Src/motor_control.c:81:6:update_encoder	6
+../Core/Src/motor_control.c:125:6:reset_encoder	1
