@@ -8,10 +8,15 @@
 #ifndef INC_MOTOR_CONTROL_H_
 #define INC_MOTOR_CONTROL_H_
 
-#define MIN_FREQUENCY 100
-#define MAX_FREQUENCY 1600
-#define ACCELERATION_STEP 5
-#define DECELERATION_STEP 5
+#define MIN_FREQUENCY 2300
+#define MAX_FREQUENCY 3000000
+#define ACCELERATION_STEP 100
+#define DECELERATION_STEP 100
+#define MAX_STEP 100
+
+#define BUFFER_SIZE 5
+#define MAX_E 4500
+#define MIN_E -4500
 
 #include "main.h"
 
@@ -20,17 +25,8 @@ typedef enum {
     DIRECTION_RIGHT
 } Direction;
 
-typedef struct{
-	int32_t velocity;
-	int32_t position;
-	int32_t last_counter_value;
-	float rpm;
-} encoder_instance;
 
-void update_encoder(encoder_instance *encoder_value, TIM_HandleTypeDef *tim);
-void reset_encoder(encoder_instance *encoder_value);
-
-void accelerate_RPM(int target_speed_RPM);
+void accelerate_to_RPM(int target_speed_RPM);
 void decelerate_to_RPM(int target_speed_RPM);
 void set_direction(Direction direction);
 

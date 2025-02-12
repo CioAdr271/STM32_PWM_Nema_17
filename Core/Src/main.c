@@ -24,6 +24,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "motor_control.h"
+#include "encoder_control.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -55,8 +56,8 @@ __attribute__((at(0x30040060))) ETH_DMADescTypeDef  DMATxDscrTab[ETH_TX_DESC_CNT
 
 #elif defined ( __GNUC__ ) /* GNU Compiler */
 
-ETH_DMADescTypeDef DMARxDscrTab[ETH_RX_DESC_CNT] __attribute__((section(".RxDecripSection"))); /* Ethernet Rx DMA Descriptors */
-ETH_DMADescTypeDef DMATxDscrTab[ETH_TX_DESC_CNT] __attribute__((section(".TxDecripSection")));   /* Ethernet Tx DMA Descriptors */
+ETH_DMADescTypeDef DMARxDscrTab[ETH_RX_DESC_CNT] __attribute__((section(".RxDescripSection"))); /* Ethernet Rx DMA Descriptors */
+ETH_DMADescTypeDef DMATxDscrTab[ETH_TX_DESC_CNT] __attribute__((section(".TxDescripSection")));   /* Ethernet Tx DMA Descriptors */
 #endif
 
 ETH_TxPacketConfig TxConfig;
@@ -66,6 +67,7 @@ ETH_HandleTypeDef heth;
 TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim3;
 
+UART_HandleTypeDef huart4;
 UART_HandleTypeDef huart3;
 
 PCD_HandleTypeDef hpcd_USB_OTG_FS;
@@ -96,6 +98,7 @@ static void MX_USART3_UART_Init(void);
 static void MX_USB_OTG_FS_PCD_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_TIM1_Init(void);
+static void MX_UART4_Init(void);
 void StartDefaultTask(void *argument);
 void StartTask02(void *argument);
 
@@ -148,6 +151,7 @@ int main(void)
   MX_USB_OTG_FS_PCD_Init();
   MX_TIM3_Init();
   MX_TIM1_Init();
+  MX_UART4_Init();
   /* USER CODE BEGIN 2 */
   //HAL_TIM_PWM_Start(&htim3, TIM_CHANNEL_1);
   HAL_TIM_Encoder_Start(&htim1, TIM_CHANNEL_ALL);
@@ -382,7 +386,7 @@ static void MX_TIM3_Init(void)
 
   /* USER CODE END TIM3_Init 1 */
   htim3.Instance = TIM3;
-  htim3.Init.Prescaler = 150-1;
+  htim3.Init.Prescaler = 50-1;
   htim3.Init.CounterMode = TIM_COUNTERMODE_UP;
   htim3.Init.Period = 65535-1;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
@@ -407,7 +411,7 @@ static void MX_TIM3_Init(void)
     Error_Handler();
   }
   sConfigOC.OCMode = TIM_OCMODE_PWM1;
-  sConfigOC.Pulse = 200;
+  sConfigOC.Pulse = 20;
   sConfigOC.OCPolarity = TIM_OCPOLARITY_HIGH;
   sConfigOC.OCFastMode = TIM_OCFAST_DISABLE;
   if (HAL_TIM_PWM_ConfigChannel(&htim3, &sConfigOC, TIM_CHANNEL_1) != HAL_OK)
@@ -418,6 +422,54 @@ static void MX_TIM3_Init(void)
 
   /* USER CODE END TIM3_Init 2 */
   HAL_TIM_MspPostInit(&htim3);
+
+}
+
+/**
+  * @brief UART4 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_UART4_Init(void)
+{
+
+  /* USER CODE BEGIN UART4_Init 0 */
+
+  /* USER CODE END UART4_Init 0 */
+
+  /* USER CODE BEGIN UART4_Init 1 */
+
+  /* USER CODE END UART4_Init 1 */
+  huart4.Instance = UART4;
+  huart4.Init.BaudRate = 115200;
+  huart4.Init.WordLength = UART_WORDLENGTH_8B;
+  huart4.Init.StopBits = UART_STOPBITS_1;
+  huart4.Init.Parity = UART_PARITY_NONE;
+  huart4.Init.Mode = UART_MODE_TX_RX;
+  huart4.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart4.Init.OverSampling = UART_OVERSAMPLING_16;
+  huart4.Init.OneBitSampling = UART_ONE_BIT_SAMPLE_DISABLE;
+  huart4.Init.ClockPrescaler = UART_PRESCALER_DIV1;
+  huart4.AdvancedInit.AdvFeatureInit = UART_ADVFEATURE_NO_INIT;
+  if (HAL_UART_Init(&huart4) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_UARTEx_SetTxFifoThreshold(&huart4, UART_TXFIFO_THRESHOLD_1_8) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_UARTEx_SetRxFifoThreshold(&huart4, UART_RXFIFO_THRESHOLD_1_8) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  if (HAL_UARTEx_DisableFifoMode(&huart4) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN UART4_Init 2 */
+
+  /* USER CODE END UART4_Init 2 */
 
 }
 
@@ -595,16 +647,34 @@ static void MX_GPIO_Init(void)
 void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN 5 */
+  //uint32_t last_transmit_time = 0; // Timpul ultimei transmisii
+
   /* Infinite loop */
   for(;;)
   {
-	timer_counter = __HAL_TIM_GET_COUNTER(&htim1);
-	update_encoder(&enc_instance, &htim1);
-	encoder_position = enc_instance.position;
-	encoder_velocity = enc_instance.velocity;
-	rpm = enc_instance.rpm;
-    osDelay(1);
+    timer_counter = __HAL_TIM_GET_COUNTER(&htim1);
+    update_encoder(&enc_instance, &htim1);
+    encoder_position = enc_instance.position;
+    encoder_velocity = enc_instance.velocity;
+    rpm = enc_instance.rpm;
+
+    uint32_t current_time = HAL_GetTick();
+
+    // Transmite date doar dacă au trecut 100 ms
+    //if (current_time - last_transmit_time >= 6) {
+      //last_transmit_time = current_time;
+
+      char buffer[64];
+      int int_part = (int)rpm; // Partea întreagă a RPM
+
+      // Trimite doar partea întreagă a RPM
+      sprintf(buffer, "Time: %lu ms, RPM: %d\r\n", current_time, int_part);
+      HAL_UART_Transmit(&huart3, (uint8_t *)buffer, strlen(buffer), 10);
+    //}
+
+    osDelay(1); // Poți păstra un delay scurt pentru a permite și alte sarcini
   }
+
   /* USER CODE END 5 */
 }
 
@@ -623,18 +693,25 @@ void StartTask02(void *argument)
   {
 	  set_direction(DIRECTION_LEFT);
 	  //max 700
-	  accelerate_RPM(440);
+	  accelerate_to_RPM(350);
 	  osDelay(3000);
 
 	  decelerate_to_RPM(0);
 	  osDelay(3000);
 
-	  set_direction(DIRECTION_RIGHT);
-	  accelerate_RPM(160);
-	  osDelay(3000);
+	  //decelerate_to_RPM(100);
+	  //osDelay(3000);
 
-	  decelerate_to_RPM(0);
-	  osDelay(3000);
+	  //decelerate_to_RPM(50);
+	 //	  osDelay(3000);
+
+
+	  //set_direction(DIRECTION_RIGHT);
+	  //accelerate_RPM(160);
+	  //osDelay(3000);
+
+	  //decelerate_to_RPM(0);
+	  //osDelay(3000);
   }
   /* USER CODE END StartTask02 */
 }
